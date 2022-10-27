@@ -74,7 +74,7 @@ _compare_char2:
     mov     rsi, 1
     call    string__char_at
 
-    mov     rbx, 84
+    mov     rbx, 85
     call    testing__eq_rax_rbx
 
 
