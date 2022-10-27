@@ -1,0 +1,7 @@
+jobs:
+  test:
+    - uses: ilammy/setup-nasm@v1
+    - uses: actions/checkout@v1
+    - name: testing strings
+      run: nasm -f elf64 -g string_test.asm && ld string_test.o && ./a.out
+      working-directory: ./lib
