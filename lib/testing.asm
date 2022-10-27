@@ -35,14 +35,18 @@ testing__stdout:
     pop     rax
     ret
 
+testing__print_div:
+    mov     rdx, testing__split_len
+    mov     rsi, testing__split_message
+    call    testing__stdout
+    ret
+
+
 testing__test:
     push    rdx
     push    rsi
 
-    ;; print line
-    mov     rdx, testing__split_len
-    mov     rsi, testing__split_message
-    call    testing__stdout
+    call testing__print_div
 
     ;; print sufix
     mov     rdx, testing__test_len
@@ -54,10 +58,7 @@ testing__test:
     pop     rdx
     call    testing__stdout
 
-    ;; print line
-    mov     rdx, testing__split_len
-    mov     rsi, testing__split_message
-    call    testing__stdout
+    call testing__print_div
 
     ret
 
