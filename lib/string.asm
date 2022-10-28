@@ -80,7 +80,6 @@ string__length:
     mov     rax, [rdi]
     ret
 
-
 ;;; Return the string length
 ;;;
 ;;; Arguments:
@@ -94,4 +93,17 @@ string__print:
 
     syscall
     ret
+
+;;; Free the stack
+;;;
+;;; Arguments:
+;;; rdi: string location pointer
+string__stack_free:
+    pop     rdx                 ; pop the return location
+
+    pop     rsi                 ; get the string size
+    add     rsp, 8              ; remove the string length
+    add     rsp, rsi            ; remove all chars from stack
+
+    jmp     rdx                 ; jump to return location
 %endif

@@ -41,7 +41,6 @@ testing__print_div:
     call    testing__stdout
     ret
 
-
 testing__test:
     push    rdx
     push    rsi
