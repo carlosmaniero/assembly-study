@@ -3,16 +3,16 @@
     global _start
 
     section .data
-comparing_char_message:       db  "Comparing char"
-comparing_char_len:           equ $ - comparing_char_message
+testing_char_message:       db  "Testing char"
+testing_char_len:           equ $ - testing_char_message
 
-comparing_length_message:     db  "Comparing length"
-comparing_length_len:         equ $ - comparing_length_message
+testing_length_message:     db  "Testing length"
+testing_length_len:         equ $ - testing_length_message
 
-comparing_freeing_message:    db  "Testing free string on stack"
-comparing_freeing_len:        equ $ - comparing_freeing_message
+testing_freeing_message:    db  "Testing free string on stack"
+testing_freeing_len:        equ $ - testing_freeing_message
 
-item_before_string            equ 13
+item_before_string          equ 13
 
     section .text
 
@@ -45,8 +45,8 @@ _test_add_char_1:
     call    testing__debug_string
 
 _test_compare_string_length:
-    mov     rsi, comparing_length_message
-    mov     rdx, comparing_length_len
+    mov     rsi, testing_length_message
+    mov     rdx, testing_length_len
     call    testing__test
 
     mov     rdi, rsp
@@ -67,8 +67,8 @@ _test_add_char_2:
     call    testing__debug_string
 
 _test_char_at_1:
-    mov     rsi, comparing_char_message
-    mov     rdx, comparing_char_len
+    mov     rsi, testing_char_message
+    mov     rdx, testing_char_len
     call    testing__test
 
     mov     rdi, rsp
@@ -79,8 +79,8 @@ _test_char_at_1:
     call    testing__eq_rax_rbx
 
 _test_char_at_2:
-    mov     rsi, comparing_char_message
-    mov     rdx, comparing_char_len
+    mov     rsi, testing_char_message
+    mov     rdx, testing_char_len
     call    testing__test
 
     mov     rdi, rsp
@@ -102,10 +102,9 @@ _test_get_previous_stack_pointer:
     mov     rbx, item_before_string
     call    testing__eq_rax_rbx
 
-
 _test_freeing_string:
-    mov     rsi, comparing_freeing_message
-    mov     rdx, comparing_freeing_len
+    mov     rsi, testing_freeing_message
+    mov     rdx, testing_freeing_len
     call    testing__test
 
     mov     rdi, rsp
