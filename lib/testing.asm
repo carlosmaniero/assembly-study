@@ -5,9 +5,16 @@ testing__STDOUT_FD:          equ 1
 testing__EXIT_CODE_FAIL:     equ 1
 testing__WRITE_SYSCALL:      equ 1
 testing__EXIT_SYSCALL:       equ 60
+testing__NL:                 db 10
 
 testing__eq_rax_rbx_message: db  "Expecting rax = rbx: "
 testing__eq_rax_rbx_len:     equ $ - testing__eq_rax_rbx_message
+
+testing__true_message:       db  "Expecting true: "
+testing__true_len:           equ $ - testing__true_message
+
+testing__false_message:      db  "Expecting false: "
+testing__false_len:          equ $ - testing__false_message
 
 testing__fail_message:       db  `\033[0;31mFailed!\033[0m`, 10
 testing__fail_len:           equ $ - testing__fail_message
@@ -76,6 +83,30 @@ testing__success:
     call    testing__stdout
     ret
 
+_check_equals_flag:
+    jne testing__exit_fail
+    jmp testing__success
+
+_check_ne_flag:
+    je  testing__exit_fail
+    jmp testing__success
+
+testing__true:
+    ;; print message
+    mov     rdx, testing__true_len
+    mov     rsi, testing__true_message
+    call    testing__stdout
+
+    jmp _check_equals_flag
+
+testing__false:
+    ;; print message
+    mov     rdx, testing__false_len
+    mov     rsi, testing__false_message
+    call    testing__stdout
+
+    jmp _check_ne_flag
+
 ;;; Expects RAX to be equal RBX
 testing__eq_rax_rbx:
     ;; print message
@@ -83,9 +114,8 @@ testing__eq_rax_rbx:
     mov     rsi, testing__eq_rax_rbx_message
     call    testing__stdout
 
-    cmp rax, rbx
-    jne testing__exit_fail
-    jmp testing__success
+    cmp     rax, rbx
+    jmp     _check_equals_flag
 
 ;;; Arguments:
 ;;; rdi: the string pointer
@@ -107,5 +137,11 @@ testing__debug_string:
     pop     rax
 
     call    string__print
+
+    mov     rsi, testing__NL
+    mov     rdx, 1
+    mov     rdi, testing__STDOUT_FD
+    mov     rax, testing__WRITE_SYSCALL
+    syscall
 
     ret

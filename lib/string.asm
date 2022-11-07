@@ -68,6 +68,24 @@ string__char_at:
     mov     al, [rdi + STRING__FIRST_ITEM_INDEX + rsi]
     ret
 
+;;; Remove the last char of a string
+;;;
+;;; Arguments:
+;;; rdi: string location pointer
+;;;
+;;; Return:
+;;; zf: is set true case there is nothing to pop
+string__pop:
+    cmp     word [rdi], 0
+    je      string___pop_ret
+    push    rdx
+    mov     rdx, [rdi]
+    dec     rdx
+    mov     [rdi], rdx
+    pop     rdx
+string___pop_ret:
+    ret
+
 ;;; Return the string length
 ;;;
 ;;; Arguments:
@@ -102,20 +120,72 @@ string__print:
 ;;; Return:
 ;;; rax: previous location
 string__previous_reference:
-    call    string__length
-    lea     rax, [rax + rdi]
-    add     rax, STRING__FIRST_ITEM_INDEX
+    mov     rax, [rdi + STRING__SIZE_INDEX] ; store the string size onto rax
+    add     rax, rdi                        ; size + string position
+    add     rax, STRING__FIRST_ITEM_INDEX   ; size + string position + first item index
+    ret
+
+;;; Set the ZF=1 case rdi string equals rsi
+;;;
+;;; Arguments:
+;;; rdi: first string location pointer
+;;; rsi: seccond string location pointer
+string__equals:
+    push    rdi
+    push    rsi
+
+    ; return true if both points to the same string
+    cmp     rdi, rsi
+    je      string___equals_ret
+
+    ; check if both has the same length
+    mov     rax, [rdi]          ; first string length
+    mov     rbx, [rsi]          ; second string length
+    cmp     rax, rbx
+    jne     string___equals_ret
+
+    ; check if size is zero
+    cmp     rbx, 0
+    je      string___equals_ret
+
+    xor     rax, rax            ; ACC = 0
+string___equals_loop:
+    push    rax
+
+    ;; Store the rax char from the second string in r9
+    mov     rdi, [rsp + 16]
+    mov     rsi, [rsp]
+    call    string__char_at
+    mov     r9, rax
+
+    ;; Store the rax char from the first string in r8
+    mov     rdi, [rsp + 8]
+    mov     rsi, [rsp]
+    call    string__char_at
+    mov     r8, rax
+
+    pop     rax
+
+    ;; compare chars
+    cmp     r9, r8
+    jne     string___equals_ret
+
+    inc     rax
+
+    cmp     rax, rbx
+    jne     string___equals_loop
+
+string___equals_ret:
+    pop     rsi
+    pop     rdi
     ret
 
 ;;; Free the stack
-;;;
-;;; Arguments:
-;;; rdi: string location pointer
 string__stack_free:
     pop     rdx                 ; pop the return location
 
-    pop     rsi                 ; get the string size
     add     rsp, 8              ; remove the string length
+    pop     rsi                 ; get the string size
     add     rsp, rsi            ; remove all chars from stack
 
     jmp     rdx                 ; jump to return location
