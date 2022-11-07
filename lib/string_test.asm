@@ -27,14 +27,16 @@ _exitError:
     syscall
 
 _start:
-    ;; Add something to stack to make sure the free method works
+    mov  rbp, rsp
+
+    ;; add something to stack to make sure the free method works
     push item_before_string
 
-    ;; Create a 2-length string
+    ;; create a 2-length string
     mov     rdi, 2
     call    string__new_onto_stack
 
-_add_char1:
+_test_add_char_1:
     mov     rdi, rsp
     mov     rsi, 76
     call    string__insert_char
@@ -53,7 +55,7 @@ _test_compare_string_length:
     mov     rbx, 1
     call    testing__eq_rax_rbx
 
-_test_add_char2:
+_test_add_char_2:
     mov     rdi, rsp
     mov     rsi, 85
     call    string__insert_char
@@ -64,7 +66,7 @@ _test_add_char2:
     mov     rdi, rsp
     call    testing__debug_string
 
-_test_compare_char1:
+_test_char_at_1:
     mov     rsi, comparing_char_message
     mov     rdx, comparing_char_len
     call    testing__test
@@ -76,7 +78,7 @@ _test_compare_char1:
     mov     rbx, 76
     call    testing__eq_rax_rbx
 
-_test_compare_char2:
+_test_char_at_2:
     mov     rsi, comparing_char_message
     mov     rdx, comparing_char_len
     call    testing__test
@@ -87,6 +89,19 @@ _test_compare_char2:
 
     mov     rbx, 85
     call    testing__eq_rax_rbx
+
+_test_get_previous_stack_pointer:
+    mov     rdi, rsp
+
+    call string__previous_reference
+
+    lea     rbx, [rbp - 8]
+    call    testing__eq_rax_rbx
+
+    mov     rax, [rbx]
+    mov     rbx, item_before_string
+    call    testing__eq_rax_rbx
+
 
 _test_freeing_string:
     mov     rsi, comparing_freeing_message

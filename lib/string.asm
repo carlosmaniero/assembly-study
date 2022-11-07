@@ -94,6 +94,19 @@ string__print:
     syscall
     ret
 
+;;; Return a pointer to the previous location
+;;;
+;;; Arguments:
+;;; rdi: string location pointer
+;;;
+;;; Return:
+;;; rax: previous location
+string__previous_reference:
+    call    string__length
+    lea     rax, [rax + rdi]
+    add     rax, STRING__FIRST_ITEM_INDEX
+    ret
+
 ;;; Free the stack
 ;;;
 ;;; Arguments:
