@@ -30,6 +30,9 @@ testing_raw_concat_len:        equ $ - testing_raw_concat_message
 testing_concat_message:        db  "Testing string concat + overflow"
 testing_concat_len:            equ $ - testing_concat_message
 
+testing_to_integer_message:    db  "Testing converting string to int"
+testing_to_integer_len:        equ $ - testing_to_integer_message
+
 testing_check_leak_message:    db  "Check if there is any leak"
 testing_check_leak_len:        equ $ - testing_check_leak_message
 
@@ -242,16 +245,12 @@ _test_compare_not_equals_length_strings:
     mov     rdi, rsp
     call    string__stack_free
 
-_test_raw_concat:
-    mov     rsi, testing_raw_concat_message
-    mov     rdi, testing_raw_concat_len
-    call    testing__test
-
-    ;; create a 2-length string
+_create_concat_strings:
+    ;; create a 3-length string
     mov     rdi, 3
     call    string__new_onto_stack
 
-    ;; create a 2-length string
+    ;; create a 3-length string
     mov     rdi, 3
     call    string__new_onto_stack
 
@@ -261,6 +260,11 @@ _test_raw_concat:
     call    string__previous_reference
 
     push    rax                 ; add the pointer to the first string to stack
+
+_test_raw_concat:
+    mov     rsi, testing_raw_concat_message
+    mov     rdi, testing_raw_concat_len
+    call    testing__test
 
     ;; Set the first string
     mov     rdi, [rsp + 8]
@@ -311,6 +315,7 @@ _test_concat:
 
     call    testing__true
 
+_freeing_concat_strings:
     ;; Freeing strings used to compare
     pop     rax
     pop     rax
@@ -318,6 +323,43 @@ _test_concat:
     mov     rdi, rsp
     call    string__stack_free
 
+    mov     rdi, rsp
+    call    string__stack_free
+
+_test_string_to_integer:
+    mov     rsi, testing_to_integer_message
+    mov     rdi, testing_to_integer_len
+    call    testing__test
+
+    ;; create string
+    mov     rdi, 4
+    call    string__new_onto_stack
+
+    mov     rdi, rsp
+    mov     rsi, '1'
+    call    string__insert_char
+
+    mov     rdi, rsp
+    mov     rsi, '9'
+    call    string__insert_char
+
+    mov     rdi, rsp
+    mov     rsi, '9'
+    call    string__insert_char
+
+    mov     rdi, rsp
+    mov     rsi, '3'
+    call    string__insert_char
+
+    call    testing__debug_string
+
+    mov     rdi, rsp
+    call    string__to_integer
+
+    cmp     rax, 1993
+    call    testing__true
+
+    ;; free string
     mov     rdi, rsp
     call    string__stack_free
 

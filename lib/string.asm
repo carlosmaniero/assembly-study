@@ -226,6 +226,51 @@ string__concat:
     mov     rdx, [rsi]
     jmp     string__raw_concat
 
+;;; converts string to integer
+;;;
+;;; Arguments:
+;;; rdi: The string pointer
+;;;
+;;; Return:
+;;; Rax: The number
+string__to_integer:
+    push    r9
+    push    rsi
+
+    mov     r9, 10
+
+    mov     rdx, 1              ; Current base number
+    mov     rsi, [rdi]          ; Current index
+    xor     rcx, rcx            ; ACC
+    xor     rax, rax
+
+string__to_integer_loop:
+    dec     rsi
+    call    string__char_at
+    sub     rax, '0'            ; Convert char to int
+
+    ;; add the number to the correct base
+    ;; it also preserves rdx since it is changed by mul
+    push    rdx
+    mul     rdx
+    pop     rdx
+
+    add     rcx, rax
+
+    ;; next base
+    mov     rax, rdx
+    mul     r9
+    mov     rdx, rax
+
+    cmp     rsi, 0
+    jne     string__to_integer_loop
+
+    mov     rax, rcx
+
+    pop     rsi
+    pop     r9
+    ret
+
 ;;; Free the stack
 string__stack_free:
     pop     rdx                 ; pop the return location
