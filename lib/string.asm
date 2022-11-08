@@ -1,3 +1,5 @@
+%include "./io.asm"
+
 %ifndef MANISTRING
 %define MANISTRING
     section .data
@@ -104,13 +106,9 @@ string__length:
 ;;; rdi: string location pointer
 string__print:
     lea     rsi, [rdi + STRING__FIRST_ITEM_INDEX]
-    mov     rdx, [rdi]
+    mov     rdi, [rdi]
 
-    mov     rdi, 1
-    mov     rax, 1
-
-    syscall
-    ret
+    jmp     io__print
 
 ;;; Return a pointer to the previous location
 ;;;

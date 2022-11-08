@@ -58,7 +58,7 @@ _test_add_char_1:
 
 _test_compare_string_length:
     mov     rsi, testing_length_message
-    mov     rdx, testing_length_len
+    mov     rdi, testing_length_len
     call    testing__test
 
     mov     rdi, rsp
@@ -80,7 +80,7 @@ _test_add_char_2:
 
 _test_char_at_1:
     mov     rsi, testing_char_message
-    mov     rdx, testing_char_len
+    mov     rdi, testing_char_len
     call    testing__test
 
     mov     rdi, rsp
@@ -92,7 +92,7 @@ _test_char_at_1:
 
 _test_char_at_2:
     mov     rsi, testing_char_message
-    mov     rdx, testing_char_len
+    mov     rdi, testing_char_len
     call    testing__test
 
     mov     rdi, rsp
@@ -117,7 +117,7 @@ _bp:
 
 _test_pop_char:
     mov     rsi, testing_pop_char_message
-    mov     rdx, testing_pop_char_len
+    mov     rdi, testing_pop_char_len
     call    testing__test
 
     mov     rax, [rsp]          ; add stirng length to rax
@@ -141,7 +141,7 @@ _test_pop_char:
 
 _test_freeing_string:
     mov     rsi, testing_freeing_message
-    mov     rdx, testing_freeing_len
+    mov     rdi, testing_freeing_len
     call    testing__test
 
     mov     rdi, rsp
@@ -153,7 +153,7 @@ _test_freeing_string:
 
 _test_compare_same_strings:
     mov     rsi, testing_comparing_same_message
-    mov     rdx, testing_comparing_same_len
+    mov     rdi, testing_comparing_same_len
     call    testing__test
 
     ;; create a 1-length string
@@ -168,7 +168,7 @@ _test_compare_same_strings:
 
 _test_compare_zero_length_strings:
     mov     rsi, testing_comparing_0_message
-    mov     rdx, testing_comparing_0_len
+    mov     rdi, testing_comparing_0_len
     call    testing__test
 
     ;; create a 2-length string
@@ -190,7 +190,7 @@ _test_compare_zero_length_strings:
 
 _test_compare_not_equals_length_strings:
     mov     rsi, testing_comparing_diff_message
-    mov     rdx, testing_comparing_diff_len
+    mov     rdi, testing_comparing_diff_len
     call    testing__test
 
     mov     rdi, [rsp]          ; move to rdi the previous string position

@@ -1,4 +1,5 @@
 %include "./string.asm"
+%include "./io.asm"
 
     section .data
 testing__STDOUT_FD:          equ 1
@@ -32,56 +33,52 @@ testing__split_message:      db 10, `\033[1;34m---------------------------------
 testing__split_len:          equ $ - testing__split_message
 
     section .text
-testing__stdout:
-    push    rax
-    push    rdi
-    mov     rdi, testing__STDOUT_FD
-    mov     rax, testing__WRITE_SYSCALL
-    syscall
-    pop     rdi
-    pop     rax
-    ret
 
-testing__print_div:
-    mov     rdx, testing__split_len
+_testing__print_line:
+    mov     rdi, testing__split_len
     mov     rsi, testing__split_message
-    call    testing__stdout
+    call    io__print
     ret
 
+;;; Print a test case
+;;;
+;;; Arguments:
+;;; rdi: the string length
+;;; rsi: the string pointer
 testing__test:
-    push    rdx
+    push    rdi
     push    rsi
 
-    call testing__print_div
+    call _testing__print_line
 
     ;; print sufix
-    mov     rdx, testing__test_len
+    mov     rdi, testing__test_len
     mov     rsi, testing__test_message
-    call    testing__stdout
+    call    io__print
 
     ;; print test case
     pop     rsi
-    pop     rdx
-    call    testing__stdout
+    pop     rdi
+    call    io__print
 
-    call testing__print_div
+    call _testing__print_line
 
     ret
 
+;;; Show failure message and exit the application
 testing__exit_fail:
     mov     rsi, testing__fail_message
-    mov     rdx, testing__fail_len
-    call    testing__stdout
+    mov     rdi, testing__fail_len
+    call    io__print
     mov     rax, testing__EXIT_SYSCALL
     mov     rdi, testing__EXIT_CODE_FAIL
     syscall
 
-;;; Just return to the callee
+;;; Show sucess message and return to callee
 testing__success:
     mov     rsi, testing__success_message
-    mov     rdx, testing__success_len
-    call    testing__stdout
-    ret
+    mov     rdi, testing__success_len
+    jmp     io__print
 
 _check_equals_flag:
     jne testing__exit_fail
@@ -91,28 +88,39 @@ _check_ne_flag:
     je  testing__exit_fail
     jmp testing__success
 
+;;; Expects the ZF to be set
 testing__true:
     ;; print message
-    mov     rdx, testing__true_len
+    mov     rdi, testing__true_len
     mov     rsi, testing__true_message
-    call    testing__stdout
+    call    io__print
 
     jmp _check_equals_flag
 
+;;; Expects the ZF to be not set
 testing__false:
     ;; print message
-    mov     rdx, testing__false_len
+    mov     rdi, testing__false_len
     mov     rsi, testing__false_message
-    call    testing__stdout
+    call    io__print
 
     jmp _check_ne_flag
 
 ;;; Expects RAX to be equal RBX
+;;;
+;;; Arguments:
+;;; rax: first item
+;;; rbx: seccond item
 testing__eq_rax_rbx:
     ;; print message
-    mov     rdx, testing__eq_rax_rbx_len
+    mov     rdi, testing__eq_rax_rbx_len
     mov     rsi, testing__eq_rax_rbx_message
-    call    testing__stdout
+
+    push    rax
+    push    rbx
+    call    io__print
+    pop     rbx
+    pop     rax
 
     cmp     rax, rbx
     jmp     _check_equals_flag
@@ -126,10 +134,8 @@ testing__debug_string:
     push    rsi
 
     mov     rsi, testing__debug_str_message
-    mov     rdx, testing__debug_str_len
-    mov     rdi, testing__STDOUT_FD
-    mov     rax, testing__WRITE_SYSCALL
-    syscall
+    mov     rdi, testing__debug_str_len
+    call    io__print
 
     pop     rsi
     pop     rdx
@@ -139,9 +145,5 @@ testing__debug_string:
     call    string__print
 
     mov     rsi, testing__NL
-    mov     rdx, 1
-    mov     rdi, testing__STDOUT_FD
-    mov     rax, testing__WRITE_SYSCALL
-    syscall
-
-    ret
+    mov     rdi, 1
+    jmp     io__print
