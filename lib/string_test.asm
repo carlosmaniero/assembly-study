@@ -24,7 +24,13 @@ testing_comparing_0_len:        equ $ - testing_comparing_0_message
 testing_comparing_diff_message: db  "Testing comparing not equals strings"
 testing_comparing_diff_len:     equ $ - testing_comparing_diff_message
 
-item_before_string              equ 13
+testing_raw_concat_message:    db  "Testing concat from raw"
+testing_raw_concat_len:        equ $ - testing_raw_concat_message
+
+testing_check_leak_message:    db  "Check if there is any leak"
+testing_check_leak_len:        equ $ - testing_check_leak_message
+
+testing_string_to_be_copied     db  "Hi"
 
     section .text
 
@@ -39,9 +45,6 @@ _exitError:
     syscall
 
 _start:
-    ;; add something to stack to make sure the free method works
-    push item_before_string
-
     mov  rbp, rsp
 
     ;; create a 2-length string
@@ -107,12 +110,7 @@ _test_get_previous_stack_pointer:
 
     call string__previous_reference
 
-_bp:
     lea     rbx, [rbp]
-    call    testing__eq_rax_rbx
-
-    mov     rax, [rbx]
-    mov     rbx, item_before_string
     call    testing__eq_rax_rbx
 
 _test_pop_char:
@@ -147,9 +145,8 @@ _test_freeing_string:
     mov     rdi, rsp
     call    string__stack_free
 
-    pop     rax
-    mov     rbx, item_before_string
-    call    testing__eq_rax_rbx
+    cmp     rsp, rbp
+    call    testing__true
 
 _test_compare_same_strings:
     mov     rsi, testing_comparing_same_message
@@ -232,6 +229,100 @@ _test_compare_not_equals_length_strings:
     call    string__equals
     call    testing__true
 
+    ;; Freeing strings used to compare
+    pop     rax
+    pop     rax
+
+    mov     rdi, rsp
+    call    string__stack_free
+
+    mov     rdi, rsp
+    call    string__stack_free
+
+_test_raw_concat:
+    mov     rsi, testing_raw_concat_message
+    mov     rdi, testing_raw_concat_len
+    call    testing__test
+
+    ;; create a 2-length string
+    mov     rdi, 3
+    call    string__new_onto_stack
+
+    ;; create a 2-length string
+    mov     rdi, 3
+    call    string__new_onto_stack
+
+    mov     rdi, rsp
+    push    rsp                 ; add the pointer to the second string to stack
+
+    call    string__previous_reference
+
+    push    rax                 ; add the pointer to the first string to stack
+
+    ;; Set the first string
+    mov     rdi, [rsp + 8]
+    mov     rsi, 72             ; 'H'
+    call    string__insert_char
+
+    mov     rdi, [rsp + 8]
+    mov     rsi, 105            ; 'i'
+    call    string__insert_char
+    call    testing__debug_string
+
+    ;; Concat
+    mov     rdi, [rsp]
+    mov     rsi, testing_string_to_be_copied
+    mov     rdx, 2
+    call    string__raw_concat
+
+    mov     rdi, [rsp]
+    call    testing__debug_string
+
+    mov     rdi, [rsp]          ; move to rdi the previous string position
+    mov     rsi, [rsp + 8]      ; move to rsi the current string position
+    call    string__equals
+
+    call    testing__true
+
+    ;; Concat overflow
+    mov     rdi, [rsp + 8]
+    mov     rsi, 72             ; 'H'
+    call    string__insert_char
+
+    mov     rdi, [rsp]
+    mov     rsi, testing_string_to_be_copied
+    mov     rdx, 2
+    call    string__raw_concat
+
+    mov     rdi, [rsp]
+    call    testing__debug_string
+    mov     rdi, [rsp + 8]
+    call    testing__debug_string
+
+    mov     rdi, [rsp]          ; move to rdi the previous string position
+    mov     rsi, [rsp + 8]      ; move to rsi the current string position
+    call    string__equals
+
+    call    testing__true
+
+    ;; Freeing strings used to compare
+    pop     rax
+    pop     rax
+
+    mov     rdi, rsp
+    call    string__stack_free
+
+    mov     rdi, rsp
+    call    string__stack_free
+
+;;; Must be the latest test
+_test_leak:
+    mov     rsi, testing_check_leak_message
+    mov     rdi, testing_check_leak_len
+    call    testing__test
+
+    cmp     rsp, rbp
+    call    testing__true
 
 _bye:
     jmp     _exit

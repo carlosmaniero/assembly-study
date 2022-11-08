@@ -36,6 +36,9 @@ string__new_onto_stack:
 ;;; rdi: string location pointer
 ;;; rsi: char
 ;;;
+;;; Flags:
+;;; ZF: when string overflows
+;;;
 ;;; Usage:
 ;;; mov rdi, <THE_STRING_POINTER>
 ;;; mov rsi, 49
@@ -50,11 +53,17 @@ string__new_onto_stack:
 ;;;  length   size     c1 c2
 string__insert_char:
     mov     rdx, [rdi]          ; store the string length
+    mov     rax, [rdi + STRING__SIZE_INDEX] ; store the size
+
+    cmp     rax, rdx
+    je      string__insert_char_ret
+
     ;; store the less significant byte of rsi into the right position
     ;; rdi + (8) length + (8) size + char position
-    mov     [rdi + STRING__FIRST_ITEM_INDEX + rdx], sil
+    mov     byte [rdi + STRING__FIRST_ITEM_INDEX + rdx], sil
     inc     rdx                 ; increase string length
     mov     [rdi], rdx          ; store the new length
+string__insert_char_ret:
     ret
 
 ;;; Read a char given a position
@@ -172,10 +181,40 @@ string___equals_loop:
 
     cmp     rax, rbx
     jne     string___equals_loop
-
 string___equals_ret:
     pop     rsi
     pop     rdi
+    ret
+
+;;; concat a raw string to a string
+;;;
+;;; Arguments:
+;;; rdi: The concat destination pointer
+;;; rsi: The raw byte array pointer
+;;; rdx: Quantity of bytes to be concated
+string__raw_concat:
+    xor     rax, rax            ; set acc = 0
+string__raw_concat_loop:
+    push    rdi
+    push    rsi
+    push    rdx
+    push    rax
+
+    lea     rdx, [rsi + rax]
+    mov     byte rsi, [rdx]
+    call    string__insert_char
+
+    pop     rax
+    pop     rdx
+    pop     rsi
+    pop     rdi
+
+    je      string__raw_concat_loop_ret
+
+    inc     rax
+    cmp     rax, rdx
+    jne     string__raw_concat_loop
+string__raw_concat_loop_ret:
     ret
 
 ;;; Free the stack
