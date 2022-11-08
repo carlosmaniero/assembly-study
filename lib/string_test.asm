@@ -24,17 +24,20 @@ testing_comparing_0_len:        equ $ - testing_comparing_0_message
 testing_comparing_diff_message: db  "Testing comparing not equals strings"
 testing_comparing_diff_len:     equ $ - testing_comparing_diff_message
 
-testing_raw_concat_message:    db  "Testing concat from raw"
-testing_raw_concat_len:        equ $ - testing_raw_concat_message
+testing_raw_concat_message:     db  "Testing concat from raw"
+testing_raw_concat_len:         equ $ - testing_raw_concat_message
 
-testing_concat_message:        db  "Testing string concat + overflow"
-testing_concat_len:            equ $ - testing_concat_message
+testing_concat_message:         db  "Testing string concat + overflow"
+testing_concat_len:             equ $ - testing_concat_message
 
-testing_to_integer_message:    db  "Testing converting string to int"
-testing_to_integer_len:        equ $ - testing_to_integer_message
+testing_to_integer_message:     db  "Testing converting string to int"
+testing_to_integer_len:         equ $ - testing_to_integer_message
 
-testing_check_leak_message:    db  "Check if there is any leak"
-testing_check_leak_len:        equ $ - testing_check_leak_message
+testing_reverse_message:        db  "Testing reversing string"
+testing_reverse_len:            equ $ - testing_reverse_message
+
+testing_check_leak_message:     db  "Check if there is any leak"
+testing_check_leak_len:         equ $ - testing_check_leak_message
 
 testing_string_to_be_copied     db  "Hi"
 
@@ -360,6 +363,60 @@ _test_string_to_integer:
     call    testing__true
 
     ;; free string
+    mov     rdi, rsp
+    call    string__stack_free
+
+_test_reversing_string:
+    mov     rsi, testing_reverse_message
+    mov     rdi, testing_reverse_len
+    call    testing__test
+
+    ;; create string
+    mov     rdi, 2
+    call    string__new_onto_stack
+
+    mov     rdi, rsp
+    mov     rsi, '3'
+    call    string__insert_char
+
+    mov     rdi, rsp
+    mov     rsi, '<'
+    call    string__insert_char
+
+    ;; create expected string
+    mov     rdi, 2
+    call    string__new_onto_stack
+
+    mov     rdi, rsp
+    mov     rsi, '<'
+    call    string__insert_char
+
+    mov     rdi, rsp
+    mov     rsi, '3'
+    call    string__insert_char
+
+    mov     rdi, rsp
+    push    rsp                 ; add the pointer to the second string to stack
+
+    call    string__previous_reference
+
+    push    rax                 ; add the pointer to the first string to stack
+
+    mov     rdi, [rsp]
+    call    string__reverse
+
+    mov     rdi, [rsp]          ; move to rdi the previous string position
+    mov     rsi, [rsp + 8]      ; move to rsi the current string position
+    call    string__equals
+    call    testing__true
+
+
+    ;; free string
+    pop     rax
+    pop     rax
+
+    mov     rdi, rsp
+    call    string__stack_free
     mov     rdi, rsp
     call    string__stack_free
 

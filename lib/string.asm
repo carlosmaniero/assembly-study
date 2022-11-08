@@ -226,6 +226,54 @@ string__concat:
     mov     rdx, [rsi]
     jmp     string__raw_concat
 
+;;; Reverse a string
+;;;
+;;; Arguments:
+;;; rdi: The string to be reversed
+string__reverse:
+    ;; preserve registers
+    push    rsi
+    push    r9
+    mov     r9, rdi
+
+    mov     rdi, [rdi]
+    call    string__new_onto_stack
+
+    ;; Create a copy of the current string
+    mov     rdi, rsp
+    mov     rsi, rax
+    call    string__concat
+
+    mov     rdi, r9
+    mov     rsi, [rdi]
+
+    ;; Clean the string size
+    mov     word [rdi], 0
+string__reverse_loop:
+    dec     rsi
+
+    mov     rdi, rsp
+    call    string__char_at
+
+    push    rsi
+    mov     rdi, r9
+    mov     rsi, rax
+
+    call    string__insert_char
+    pop     rsi
+
+    cmp     rsi, 0
+    jne     string__reverse_loop
+
+    ;; Clean the string copy
+    call    string__stack_free
+
+    ;; restore registers
+    mov     rdi, r9
+    pop     rsi
+    pop     r9
+    ret
+
 ;;; converts string to integer
 ;;;
 ;;; Arguments:
