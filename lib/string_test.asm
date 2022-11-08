@@ -27,6 +27,9 @@ testing_comparing_diff_len:     equ $ - testing_comparing_diff_message
 testing_raw_concat_message:    db  "Testing concat from raw"
 testing_raw_concat_len:        equ $ - testing_raw_concat_message
 
+testing_concat_message:        db  "Testing string concat + overflow"
+testing_concat_len:            equ $ - testing_concat_message
+
 testing_check_leak_message:    db  "Check if there is any leak"
 testing_check_leak_len:        equ $ - testing_check_leak_message
 
@@ -284,15 +287,18 @@ _test_raw_concat:
 
     call    testing__true
 
-    ;; Concat overflow
+_test_concat:
+    mov     rsi, testing_concat_message
+    mov     rdi, testing_concat_len
+    call    testing__test
+
     mov     rdi, [rsp + 8]
     mov     rsi, 72             ; 'H'
     call    string__insert_char
 
     mov     rdi, [rsp]
-    mov     rsi, testing_string_to_be_copied
-    mov     rdx, 2
-    call    string__raw_concat
+    mov     rsi, [rsp + 8]
+    call    string__concat
 
     mov     rdi, [rsp]
     call    testing__debug_string

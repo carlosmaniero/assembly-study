@@ -200,8 +200,7 @@ string__raw_concat_loop:
     push    rdx
     push    rax
 
-    lea     rdx, [rsi + rax]
-    mov     byte rsi, [rdx]
+    mov     sil, [rsi + rax]
     call    string__insert_char
 
     pop     rax
@@ -216,6 +215,16 @@ string__raw_concat_loop:
     jne     string__raw_concat_loop
 string__raw_concat_loop_ret:
     ret
+
+;;; concat strings
+;;;
+;;; Arguments:
+;;; rdi: The concat destination pointer
+;;; rsi: The source pointer
+string__concat:
+    lea     rsi, [rsi + STRING__FIRST_ITEM_INDEX]
+    mov     rdx, [rsi]
+    jmp     string__raw_concat
 
 ;;; Free the stack
 string__stack_free:
