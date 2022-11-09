@@ -33,6 +33,9 @@ testing_concat_len:             equ $ - testing_concat_message
 testing_to_integer_message:     db  "Testing converting string to int"
 testing_to_integer_len:         equ $ - testing_to_integer_message
 
+testing_from_integer_message:   db  "Testing converting int to string"
+testing_from_integer_len:       equ $ - testing_from_integer_message
+
 testing_reverse_message:        db  "Testing reversing string"
 testing_reverse_len:            equ $ - testing_reverse_message
 
@@ -410,7 +413,6 @@ _test_reversing_string:
     call    string__equals
     call    testing__true
 
-
     ;; free string
     pop     rax
     pop     rax
@@ -419,6 +421,52 @@ _test_reversing_string:
     call    string__stack_free
     mov     rdi, rsp
     call    string__stack_free
+
+_test_string_from_integer:
+    mov     rsi, testing_from_integer_message
+    mov     rdi, testing_from_integer_len
+    call    testing__test
+
+    ;; create string
+    mov     rdi, 2
+    call    string__new_onto_stack
+
+    ;; Insert a char to check if it will be erased
+    mov     rdi, rsp
+    mov     rsi, 76
+    call    string__insert_char
+
+    mov     rdi, rsp
+    mov     rsi, 42
+    call    string__from_integer
+
+    mov     rdi, rsp
+    call    testing__debug_string
+
+    ;; Check string length
+    mov     rdi, rsp
+    call    string__length
+    cmp     rax, 2
+    call    testing__true
+
+    ;; assert first char
+    mov     rdi, rsp
+    mov     rsi, 0
+    call    string__char_at
+    cmp     rax, '4'
+    call    testing__true
+
+    ;; assert second char
+    mov     rdi, rsp
+    mov     rsi, 1
+    call    string__char_at
+    cmp     rax, '2'
+    call    testing__true
+
+    ;; free stack
+    mov     rdi, rsp
+    call    string__stack_free
+
 
 ;;; Must be the latest test
 _test_leak:

@@ -241,7 +241,7 @@ string__reverse:
 
     ;; Create a copy of the current string
     mov     rdi, rsp
-    mov     rsi, rax
+    mov     rsi, r9
     call    string__concat
 
     mov     rdi, r9
@@ -291,7 +291,6 @@ string__to_integer:
     mov     rsi, [rdi]          ; Current index
     xor     rcx, rcx            ; ACC
     xor     rax, rax
-
 string__to_integer_loop:
     dec     rsi
     call    string__char_at
@@ -314,6 +313,44 @@ string__to_integer_loop:
     jne     string__to_integer_loop
 
     mov     rax, rcx
+
+    pop     rsi
+    pop     r9
+    ret
+
+;;; create an string from integer
+;;;
+;;; Arguments:
+;;; rdi: The string pointer
+;;; rsi: the integer
+string__from_integer:
+    ;; Clean string
+    mov     word [rdi], 0
+    push    r9
+    push    rsi
+
+    mov     r9, 10              ; base 10
+
+    mov     rax, [rsp]
+string__from_integer_loop:
+    xor     rdx, rdx            ; rdx stores the division remaining
+    div     r9                  ; makes the division
+
+    ;; converts the remaining int into char
+    add     rdx, '0'
+
+    ;; add the char to string
+    mov     rsi, rdx
+    push    rax
+    call    string__insert_char
+    pop     rax
+
+    ;; Check if there is more to convert
+    cmp     rax, 0
+    jne     string__from_integer_loop
+string__from_integer_ret:
+    ;; Since the string is created in reverse order, reverse it
+    call    string__reverse
 
     pop     rsi
     pop     r9
